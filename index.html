@@ -546,6 +546,18 @@ const tipEl=document.getElementById('tip');
 function stateFips(id){return String(id).padStart(2,'0');}
 function countyStateFips(id){return Math.floor(id/1000).toString().padStart(2,'0');}
 
+// County FIPS → county name lookup (populated on load from Census API)
+const COUNTY_NAMES={};
+fetch('https://api.census.gov/data/2020/dec/pl?get=NAME&for=county:*')
+  .then(r=>r.json())
+  .then(rows=>{
+    for(let i=1;i<rows.length;i++){
+      const [name,state,county]=rows[i];
+      COUNTY_NAMES[state+county]=name.split(',')[0].trim();
+    }
+  })
+  .catch(()=>{});
+
 const COUNTY_SCORES={
 '06037':[9,10,8,9,9,10,9,9],
 '06073':[9,9,8,7,8,9,9,9],
@@ -1103,8 +1115,9 @@ function showCountyTip(event,stateFips,countyFips){
   const f=getCountyFactors(countyFips,stateFips);
   const score=FACTORS.reduce((sum,fac,i)=>sum+f[i]*fac.weight,0)/(90*10)*100;
   const tier=getTier(score);
+  const countyName=COUNTY_NAMES[countyFips]||(s.name+' County');
   tipEl.innerHTML=`
-    <div class="tip-name" style="color:${tier.light}">${s.name} County</div>
+    <div class="tip-name" style="color:${tier.light}">${countyName}</div>
     <div class="tip-tier" style="color:${tier.color}">${tier.label}</div>
     <div class="tip-score" style="color:${tier.light}">${score.toFixed(1)}</div>
     <div class="tip-sub">County Priority Score / 100</div>
