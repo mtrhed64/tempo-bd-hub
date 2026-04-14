@@ -189,6 +189,22 @@ header{flex-shrink:0;background:linear-gradient(135deg,#0f1630 0%,#08101f 100%);
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-thumb{background:rgba(124,58,237,.3);border-radius:2px}
+
+/* ── SEARCH BAR ── */
+.search-wrap{position:relative;flex:1;max-width:320px;margin:0 6px}
+.search-input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 10px 6px 30px;color:#e8eaf0;font-size:12px;outline:none;font-family:inherit;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%236b7280' stroke-width='2'/%3E%3Cpath d='m16.5 16.5 4 4' stroke='%236b7280' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center}
+.search-input::placeholder{color:#4b5563}
+.search-input:focus{border-color:rgba(124,58,237,.5);background-color:rgba(124,58,237,.06)}
+.search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#0f1628;border:1px solid rgba(124,58,237,.3);border-radius:9px;z-index:600;display:none;max-height:260px;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.75)}
+.search-results.show{display:block}
+.search-result-item{padding:9px 12px;cursor:pointer;font-size:11.5px;color:#d1d5db;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.search-result-item:last-child{border:none}
+.search-result-item:hover{background:rgba(124,58,237,.18);color:#e5e7eb}
+.s-badge{font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:10px;flex-shrink:0;letter-spacing:.04em}
+.s-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-state{font-size:10px;color:#6b7280;flex-shrink:0}
+@keyframes srch-pulse{0%{transform:scale(1);opacity:.9}70%{transform:scale(2.8);opacity:0}100%{transform:scale(1);opacity:0}}
+.search-ring{animation:srch-pulse 1.6s ease-out infinite}
 </style>
 </head>
 <body>
@@ -199,6 +215,10 @@ header{flex-shrink:0;background:linear-gradient(135deg,#0f1630 0%,#08101f 100%);
     <div class="logo">⚡ Tempo</div>
     <div class="divider"></div>
     <div class="hdr-sub">BD Hub 2025 — U.S. Priority Intelligence Map</div>
+  </div>
+  <div class="search-wrap">
+    <input id="search-input" class="search-input" type="text" placeholder="Search city, county, school, park, military…" autocomplete="off" spellcheck="false"/>
+    <div id="search-results" class="search-results"></div>
   </div>
   <div class="hdr-r">
     <div class="view-toggle">
@@ -1443,6 +1463,101 @@ function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f
     triggerSync();
   }
 })();
+
+
+// ═══════════════════════════════════════════════════════
+//  SEARCH BAR (Nominatim / OpenStreetMap)
+// ═══════════════════════════════════════════════════════
+const SRCH_COLORS={city:'#06b6d4',county:'#10b981',school:'#f59e0b',park:'#22c55e',military:'#ef4444',other:'#a78bfa'};
+const SRCH_ICONS={city:'🏙',county:'📍',school:'🎓',park:'🌲',military:'⭐',other:'📌'};
+
+function srchKind(r){
+  const t=(r.type||'').toLowerCase(),cl=(r.class||'').toLowerCase(),dn=(r.display_name||'').toLowerCase();
+  if(cl==='place'&&['city','town','village','municipality','suburb'].includes(t)) return 'city';
+  if((cl==='boundary'&&t==='administrative')||(r.address&&r.address.county&&!r.address.road)) return 'county';
+  if(cl==='amenity'&&['school','college','university','kindergarten'].includes(t)) return 'school';
+  if((cl==='leisure'&&t==='park')||(cl==='boundary'&&t==='national_park')||(cl==='landuse'&&t==='forest')) return 'park';
+  if(cl==='landuse'&&t==='military') return 'military';
+  if(/air force|army|naval|marine corps|national guard|fort |military|base/.test(dn)) return 'military';
+  if(/school|university|college|academy|institute/.test(dn)) return 'school';
+  if(/park|forest|refuge|wilderness|monument|recreation/.test(dn)) return 'park';
+  if(/county/.test(dn)) return 'county';
+  return 'other';
+}
+
+let _srchTimer=null;
+const _sinput=document.getElementById('search-input');
+const _sresults=document.getElementById('search-results');
+
+_sinput.addEventListener('input',()=>{
+  clearTimeout(_srchTimer);
+  const q=_sinput.value.trim();
+  if(q.length<2){_sresults.classList.remove('show');return;}
+  _srchTimer=setTimeout(()=>_doSearch(q),380);
+});
+_sinput.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){_sresults.classList.remove('show');_sinput.blur();}
+  if(e.key==='Enter'&&_sresults._data&&_sresults._data.length){_selectResult(0);}
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))_sresults.classList.remove('show');});
+
+async function _doSearch(q){
+  try{
+    const url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&countrycodes=us&format=json&limit=8&addressdetails=1&extratags=1';
+    const data=await fetch(url,{headers:{'Accept-Language':'en'}}).then(r=>r.json());
+    _renderResults(data);
+  }catch{
+    _sresults.innerHTML='<div class="search-result-item" style="color:#6b7280;font-style:italic">⚠ Search unavailable</div>';
+    _sresults.classList.add('show');
+  }
+}
+
+function _renderResults(items){
+  if(!items.length){
+    _sresults.innerHTML='<div class="search-result-item" style="color:#6b7280;font-style:italic">No US results found</div>';
+    _sresults.classList.add('show');return;
+  }
+  _sresults.innerHTML=items.map((r,i)=>{
+    const k=srchKind(r),col=SRCH_COLORS[k],icon=SRCH_ICONS[k];
+    const name=r.display_name.split(',')[0];
+    const state=r.address&&r.address.state?r.address.state:'';
+    return '<div class="search-result-item" onclick="_selectResult('+i+')"><span class="s-badge" style="background:'+col+'22;color:'+col+'">'+icon+' '+k+'</span><span class="s-name">'+name+'</span><span class="s-state">'+state+'</span></div>';
+  }).join('');
+  _sresults._data=items;
+  _sresults.classList.add('show');
+}
+
+function _selectResult(idx){
+  const r=_sresults._data&&_sresults._data[idx];
+  if(!r) return;
+  _sresults.classList.remove('show');
+  _sinput.value=r.display_name.split(',')[0];
+  const lat=parseFloat(r.lat),lon=parseFloat(r.lon);
+  if(!currentProjection) return;
+  const proj=currentProjection([lon,lat]);
+  if(!proj) return;
+  const [x,y]=proj;
+  // Remove old marker
+  svg.selectAll('.search-marker').remove();
+  // Draw marker
+  const k=srchKind(r),col=SRCH_COLORS[k];
+  const mg=svg.append('g').attr('class','search-marker').attr('transform','translate('+x+','+y+')');
+  mg.append('circle').attr('r',14).attr('fill',col).attr('opacity',.15);
+  mg.append('circle').attr('class','search-ring').attr('r',7).attr('fill','none').attr('stroke',col).attr('stroke-width',2).attr('opacity',.8);
+  mg.append('circle').attr('r',5).attr('fill',col).attr('stroke','white').attr('stroke-width',1.5);
+  // Show tooltip
+  const addr=r.address||{};
+  tipEl.innerHTML='<div class="tip-name" style="color:'+col+'">'+SRCH_ICONS[k]+' '+r.display_name.split(',')[0]+'</div>'
+    +'<div class="tip-tier" style="color:'+col+';text-transform:capitalize">'+k+'</div>'
+    +(addr.county?'<div class="tip-row"><span>County</span><span class="tip-v">'+addr.county+'</span></div>':'')
+    +(addr.state?'<div class="tip-row"><span>State</span><span class="tip-v">'+addr.state+'</span></div>':'')
+    +'<div class="tip-row"><span>Coordinates</span><span class="tip-v">'+lat.toFixed(3)+'°N '+Math.abs(lon).toFixed(3)+'°W</span></div>';
+  const W=mapPanel.clientWidth,H=mapPanel.clientHeight;
+  tipEl.style.left=Math.min(x+16,W-270)+'px';
+  tipEl.style.top=Math.max(Math.min(y-60,H-200),8)+'px';
+  tipEl.classList.add('show');
+}
+
 </script>
 </body>
 </html>
