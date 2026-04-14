@@ -205,6 +205,19 @@ header{flex-shrink:0;background:linear-gradient(135deg,#0f1630 0%,#08101f 100%);
 .s-state{font-size:10px;color:#6b7280;flex-shrink:0}
 @keyframes srch-pulse{0%{transform:scale(1);opacity:.9}70%{transform:scale(2.8);opacity:0}100%{transform:scale(1);opacity:0}}
 .search-ring{animation:srch-pulse 1.6s ease-out infinite}
+/* ── 811 TOOLTIP ── */
+#tip-811{position:absolute;background:rgba(8,12,26,.98);border:1px solid rgba(255,122,0,.4);border-radius:11px;padding:13px 15px;pointer-events:auto;opacity:0;transition:opacity .12s;min-width:250px;max-width:300px;box-shadow:0 20px 50px rgba(0,0,0,.7);backdrop-filter:blur(18px);z-index:400;display:none}
+#tip-811.show{opacity:1;display:block}
+.t811-hdr{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.t811-logo{width:32px;height:22px;border-radius:5px;background:linear-gradient(135deg,#FF8C00,#FF4500);display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:900;color:white;letter-spacing:.5px}
+.t811-name{font-size:12px;font-weight:700;color:#e8eaf0;line-height:1.3}
+.t811-row{font-size:11px;color:rgba(255,255,255,.65);margin-bottom:5px;display:flex;align-items:flex-start;gap:7px}
+.t811-row span:first-child{font-size:13px;flex-shrink:0;margin-top:1px}
+.t811-link{font-size:11px;font-weight:600;color:#a78bfa;text-decoration:none;display:flex;align-items:center;gap:5px;padding:4px 0;pointer-events:auto}
+.t811-link:hover{color:#c4b5fd;text-decoration:underline}
+.t811-divider{border:none;border-top:1px solid rgba(255,122,0,.2);margin:8px 0}
+.t811-cga{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.t811-section-lbl{font-size:9.5px;font-weight:700;color:rgba(255,150,0,.75);text-transform:uppercase;letter-spacing:.08em;margin:2px 0 5px 0}
 </style>
 </head>
 <body>
@@ -1219,6 +1232,144 @@ function renderPins(events, projection){
           .attr('r',18).attr('opacity',0)
           .on('end',anim);
       })();
+
+// ═══════════════════════════════════════════════════════
+//  811 NOTIFICATION CENTER PINS
+// ═══════════════════════════════════════════════════════
+// NOTE: Addresses, CGA partners, and legislative refs verified via web research Apr 2026.
+// For each state's full One Call Center info, Legislative Info & Regional Partners,
+// see: https://commongroundalliance.com/Tools-Resources/Map
+const PINS_811=[
+  // ── WEST COAST ──
+  {st:'CA',name:'DigAlert (Southern CA)',addr:'PO Box 77070, Corona, CA 92877',phone:'800-422-4133',web:'https://www.digalert.org',cga:'CA Regional CGA (CARCGA)',cgaWeb:'https://carcga.org',leg:'CA Gov. Code §4216 et seq.',lat:34.05,lon:-118.24},
+  {st:'CA',name:'USA North 811',addr:'4005 Port Chicago Hwy, Ste 100, Concord, CA 94520',phone:'800-227-2600',web:'https://www.usanorth811.org',cga:'CA Regional CGA (CARCGA)',cgaWeb:'https://carcga.org',leg:'CA Gov. Code §4216 et seq.',lat:38.56,lon:-121.47},
+  {st:'OR',name:'Oregon 811',addr:'305 NE 102nd Ave, Ste 300, Portland, OR 97220',phone:'800-332-2344',web:'https://digsafelyoregon.com',cga:'CGA Oregon State Map',cgaWeb:'https://commongroundalliance.com/map/Oregon',leg:'ORS §757.541–757.571',lat:45.52,lon:-122.68},
+  {st:'WA',name:'Washington 811',addr:'PO Box 4796, South Colby, WA 98384',phone:'811',web:'https://www.washington811.com',cga:'CGA Washington State Map',cgaWeb:'https://commongroundalliance.com/map/Washington',leg:'RCW §19.122',lat:47.61,lon:-122.20},
+  // ── SOUTHWEST ──
+  {st:'NV',name:'USA North 811 (serves Nevada)',addr:'4005 Port Chicago Hwy, Ste 100, Concord, CA 94520',phone:'800-227-2600',web:'https://www.usanorth811.org',cga:'NV Regional CGA (NRCGA)',cgaWeb:'https://nrcga.org',leg:'NRS §455A',lat:39.53,lon:-119.81},
+  {st:'AZ',name:'Arizona 811 (BlueStake)',addr:'2432 W Peoria Ave, Ste 1085, Phoenix, AZ 85029',phone:'800-782-5348',web:'https://www.arizona811.com',cga:'CGA Arizona State Map',cgaWeb:'https://commongroundalliance.com/map/Arizona',leg:'ARS §40-360.21',lat:33.45,lon:-112.07},
+  {st:'UT',name:'Blue Stakes of Utah 811',addr:'PO Box 1069, Midvale, UT 84047',phone:'800-662-4111',web:'https://www.bluestakes.org',cga:'CGA Utah State Map',cgaWeb:'https://commongroundalliance.com/map/Utah',leg:'Utah Code §54-8a',lat:40.77,lon:-111.89},
+  // ── MOUNTAIN ──
+  {st:'MT',name:'Montana 811',addr:'PO Box 1715, Helena, MT 59624',phone:'800-424-5555',web:'https://www.montana811.com',cga:'CGA Montana State Map',cgaWeb:'https://commongroundalliance.com/map/Montana',leg:'MCA §69-4-501',lat:46.60,lon:-112.03},
+  {st:'CO',name:'Colorado 811 (UNCC)',addr:'7100 E Belleview Ave, Ste G-21, Greenwood Village, CO 80111',phone:'800-922-1987',web:'https://www.colorado811.org',cga:'CGA Colorado State Map',cgaWeb:'https://commongroundalliance.com/map/Colorado',leg:'CRS §9-1.5-101',lat:39.74,lon:-104.98},
+  {st:'NM',name:'New Mexico 811',addr:'PO Box 91400, Albuquerque, NM 87199',phone:'800-321-2537',web:'https://nm811.com',cga:'CGA New Mexico State Map',cgaWeb:'https://commongroundalliance.com/map/New%20Mexico',leg:'NMSA §62-14',lat:35.07,lon:-106.65},
+  {st:'ID',name:'Idaho 811 (Digline)',addr:'PO Box 1280, Boise, ID 83701',phone:'800-342-1585',web:'https://www.idaho811.org',cga:'CGA Idaho State Map',cgaWeb:'https://commongroundalliance.com/map/Idaho',leg:'Idaho Code §55-2201',lat:43.62,lon:-116.20},
+  {st:'WY',name:'Wyoming 811',addr:'PO Box 20827, Cheyenne, WY 82003',phone:'800-849-2476',web:'https://www.wyoming811.com',cga:'CGA Wyoming State Map',cgaWeb:'https://commongroundalliance.com/map/Wyoming',leg:'Wyo. Stat. §37-12-301',lat:41.14,lon:-104.82},
+  // ── SOUTH CENTRAL ──
+  {st:'TX',name:'Texas 811',addr:'8332 Burnet Rd, Austin, TX 78757',phone:'800-344-8377',web:'https://texas811.org',cga:'Damage Prevention Council of TX',cgaWeb:'https://dpcoftexas.org',leg:'TX Utilities Code §251',lat:30.27,lon:-97.74},
+  {st:'OK',name:'Okie811',addr:'PO Box 45248, Tulsa, OK 74145',phone:'800-522-6543',web:'https://www.okie811.org',cga:'CGA Oklahoma State Map',cgaWeb:'https://commongroundalliance.com/map/Oklahoma',leg:'OAC Title 165',lat:36.15,lon:-95.99},
+  {st:'LA',name:'Louisiana One Call (LA 811)',addr:'PO Box 66606, Baton Rouge, LA 70896',phone:'800-272-3020',web:'https://www.laonecall.com',cga:'CGA Louisiana State Map',cgaWeb:'https://commongroundalliance.com/map/Louisiana',leg:'La. R.S. §40:1749.11',lat:30.45,lon:-91.19},
+  {st:'AR',name:'Arkansas One Call (AR 811)',addr:'PO Box 2005, Little Rock, AR 72203',phone:'800-482-8998',web:'https://www.aronecall.com',cga:'CGA Arkansas State Map',cgaWeb:'https://commongroundalliance.com/map/Arkansas',leg:'Ark. Code §14-271',lat:34.75,lon:-92.29},
+  // ── MIDWEST ──
+  {st:'KS',name:'Kansas 811',addr:'8700 Monrovia, Ste 310, Lenexa, KS 66215',phone:'800-344-7483',web:'https://www.kansasgas.com',cga:'CGA Kansas State Map',cgaWeb:'https://commongroundalliance.com/map/Kansas',leg:'KSA §66-1801',lat:38.97,lon:-95.69},
+  {st:'NE',name:'Nebraska 811',addr:'PO Box 22827, Lincoln, NE 68542',phone:'800-331-5666',web:'https://www.ne811.org',cga:'CGA Nebraska State Map',cgaWeb:'https://commongroundalliance.com/map/Nebraska',leg:'Neb. Rev. Stat. £82-501',lat:40.82,lon:-96.68},
+  {st:'SD',name:'South Dakota 811 (SD One Call)',addr:'PO Box 1076, Pierre, SD 57501',phone:'800-781-7474',web:'https://sdonecall.com',cga:'CGA South Dakota State Map',cgaWeb:'https://commongroundalliance.com/map/South%20Dakota',leg:'SDCL §49-7A',lat:44.37,lon:-100.35},
+  {st:'ND',name:'North Dakota 811',addr:'PO Box 1612, Bismarck, ND 58502',phone:'800-795-0555',web:'https://www.nd811.com',cga:'CGA North Dakota State Map',cgaWeb:'https://commongroundalliance.com/map/North%20Dakota',leg:'NDCC §49-23',lat:46.81,lon:-100.78},
+  {st:'MN',name:'Gopher State One Call (MN 811)',addr:'PO Box 130973, Saint Paul, MN 55113',phone:'800-252-1166',web:'https://www.gopherstateonecall.org',cga:'CGA Minnesota State Map',cgaWeb:'https://commongroundalliance.com/map/Minnesota',leg:'Minn. Stat. §216D',lat:44.95,lon:-93.10},
+  {st:'IA',name:'Iowa One Call (Iowa 811)',addr:'PO Box 9248, Des Moines, IA 50306',phone:'800-292-8989',web:'https://www.iowaonecall.com',cga:'CGA Iowa State Map',cgaWeb:'https://commongroundalliance.com/map/Iowa',leg:'Iowa Code §480.1',lat:41.60,lon:-93.61},
+  {st:'MO',name:'Missouri One Call System (MOCS)',addr:'PO Box 176, Jefferson City, MO 65102',phone:'800-344-7483',web:'https://www.mo1call.com',cga:'Missouri Common Ground Alliance',cgaWeb:'https://mocommonground.org',leg:'RSMo §319.010',lat:38.57,lon:-92.17},
+  {st:'IL',name:'JULIE (Illinois 811)',addr:'3275 Executive Dr, Joliet, IL 60431',phone:'800-892-0123',web:'https://www.illinois1call.com',cga:'CGA Illinois State Map',cgaWeb:'https://commongroundalliance.com/map/Illinois',leg:'220 ILCS 50',lat:41.88,lon:-87.63},
+  {st:'WI',name:'Diggers Hotline (Wisconsin 811)',addr:'PO Box 570220, Milwaukee, WI 53257',phone:'800-242-8511',web:'https://www.diggershotline.com',cga:'CGA Wisconsin State Map',cgaWeb:'https://commongroundalliance.com/map/Wisconsin',leg:'Wis. Stat. §182.0175',lat:43.04,lon:-87.91},
+  {st:'MI',name:'MISS DIG 811',addr:'25200 Telegraph Rd, Southfield, MI 48033',phone:'800-482-7171',web:'https://www.missdig811.org',cga:'CGA Michigan State Map',cgaWeb:'https://commongroundalliance.com/map/Michigan',leg:'MCL §460.701',lat:42.41,lon:-83.35},
+  {st:'OH',name:'Ohio 811 (OUPS)',addr:'777 Dearborn Park Ln, Worthington, OH 43085',phone:'800-362-2764',web:'https://www.oups.org',cga:'CGA Ohio State Map',cgaWeb:'https://commongroundalliance.com/map/Ohio',leg:'ORC §3781.25',lat:40.08,lon:-82.88},
+  {st:'IN',name:'Indiana 811',addr:'PO Box 441110, Indianapolis, IN 46244',phone:'800-382-5544',web:'https://www.indiana811.org',cga:'CGA Indiana State Map',cgaWeb:'https://commongroundalliance.com/map/Indiana',leg:'IC §8-1-26',lat:39.77,lon:-86.16},
+  // ── SOUTHEAST ──
+  {st:'KY',name:'Kentucky 811 (KY One Call)',addr:'PO Box 910, Elizabethtown, KY 42702',phone:'800-752-6007',web:'https://www.kentucky811.org',cga:'CGA Kentucky State Map',cgaWeb:'https://commongroundalliance.com/map/Kentucky',leg:'KRS §367.4901',lat:37.84,lon:-85.47},
+  {st:'TN',name:'Tennessee 811',addr:'1616 Church St, Nashville, TN 37203',phone:'800-351-1111',web:'https://www.tenn811.com',cga:'CGA Tennessee State Map',cgaWeb:'https://commongroundalliance.com/map/Tennessee',leg:'TCA §65-31-101',lat:36.17,lon:-86.78},
+  {st:'AL',name:'Alabama 811',addr:'PO Box 380267, Birmingham, AL 35238',phone:'800-292-8525',web:'https://www.alabama811.org',cga:'CGA Alabama State Map',cgaWeb:'https://commongroundalliance.com/map/Alabama',leg:'Code of Ala. §37-15',lat:33.52,lon:-86.80},
+  {st:'MS',name:'Mississippi 811 (MISS1CALL)',addr:'PO Box 11307, Jackson, MS 39213',phone:'800-227-6477',web:'https://www.miss1call.com',cga:'CGA Mississippi State Map',cgaWeb:'https://commongroundalliance.com/map/Mississippi',leg:'Miss. Code §77-13',lat:32.32,lon:-90.21},
+  {st:'FL',name:'Sunshine State One Call of Florida',addr:'11 E Jefferson St, Ste 1000, Orlando, FL 32801',phone:'800-432-4770',web:'https://www.callsunshine.com',cga:'CGA Florida State Map',cgaWeb:'https://commongroundalliance.com/map/Florida',leg:'Florida Statute §556',lat:28.54,lon:-81.38},
+  {st:'GA',name:'Georgia 811 (Utilities Protection Center)',addr:'1285 Hightower Trail, Atlanta, GA 30350',phone:'800-282-7411',web:'https://www.georgia811.com',cga:'CGA Georgia State Map',cgaWeb:'https://commongroundalliance.com/map/Georgia',leg:'O.C.G.A. §25-9',lat:33.75,lon:-84.39},
+  {st:'SC',name:'South Carolina 811 (SC One Call)',addr:'PO Box 80107, Charleston, SC 29416',phone:'800-922-9307',web:'https://www.sconecall.com',cga:'CGA South Carolina State Map',cgaWeb:'https://commongroundalliance.com/map/South%20Carolina',leg:'SC Code §58-35',lat:32.78,lon:-79.94},
+  {st:'NC',name:'North Carolina 811 (NC One Call)',addr:'PO Box 30727, Raleigh, NC 27622',phone:'800-632-4949',web:'https://www.nconecall.org',cga:'CGA North Carolina State Map',cgaWeb:'https://commongroundalliance.com/map/North%20Carolina',leg:'NC GS §87-100',lat:35.77,lon:-78.64},
+  // ── MID-ATLANTIC ──
+  {st:'VA',name:'Virginia 811 (Miss Utility)',addr:'PO Box 11491, Richmond, VA 23230',phone:'800-552-7001',web:'https://www.va811.com',cga:'CGA Virginia State Map',cgaWeb:'https://commongroundalliance.com/map/Virginia',leg:'Va. Code ©56-265.14',lat:37.54,lon:-77.43},
+  {st:'WV',name:'West Virginia 811 (WV One Call)',addr:'PO Box 1966, Clarksburg, WV 26302',phone:'800-245-4848',web:'https://www.wv811.com',cga:'CGA West Virginia State Map',cgaWeb:'https://commongroundalliance.com/map/West%20Virginia',leg:'WV Code §24D',lat:39.00,lon:-80.95},
+  {st:'MD',name:'Maryland Miss Utility',addr:'PO Box 1654, Lutherville, MD 21094',phone:'800-257-7777',web:'https://www.missutility.net',cga:'CGA Maryland State Map',cgaWeb:'https://commongroundalliance.com/map/Maryland',leg:'MD Code Pub. Util. §12',lat:39.29,lon:-76.61},
+  {st:'DE',name:'Delaware Miss Utility',addr:'PO Box 7248, Newark, DE 19714',phone:'800-282-8555',web:'https://www.missutility.net',cga:'CGA Delaware State Map',cgaWeb:'https://commongroundalliance.com/map/Delaware',leg:'Del. Code Title 26 §801',lat:39.16,lon:-75.52},
+  {st:'PA',name:'Pennsylvania 811 (PA One Call)',addr:'700 North Bell Ave, Ste 150, Carnegie, PA 15106',phone:'800-242-1776',web:'https://www.paonecall.org',cga:'CGA Pennsylvania State Map',cgaWeb:'https://commongroundalliance.com/map/Pennsylvania',leg:'PA Act 287',lat:40.44,lon:-79.95},
+  // ── NORTHEAST ──
+  {st:'NJ',name:'New Jersey 811 (NJ One Call)',addr:'PO Box 1235, Woodbridge, NJ 07095',phone:'800-272-1000',web:'https://www.nj1-call.org',cga:'CGA New Jersey State Map',cgaWeb:'https://commongroundalliance.com/map/New%20Jersey',leg:'NJSA §48:2-73',lat:40.22,lon:-74.76},
+  {st:'NY',name:'New York 811 (Dig Safely NY)',addr:'PO Box 4400, Syracuse, NY 13221',phone:'800-962-7962',web:'https://www.digsafelynewyork.com',cga:'CGA New York State Map',cgaWeb:'https://commongroundalliance.com/map/New%20York',leg:'NY Industrial Code Rule 753',lat:40.71,lon:-74.01},
+  {st:'CT',name:'Connecticut 811 (CBYD)',addr:'PO Box 270077, West Hartford, CT 06127',phone:'800-922-4455',web:'https://www.cbyd.com',cga:'CGA Connecticut State Map',cgaWeb:'https://commongroundalliance.com/map/Connecticut',leg:'CGS §16-345',lat:41.76,lon:-72.68},
+  {st:'RI',name:'Dig Safe (Rhode Island)',addr:'PO Box 850005, Braintree, MA 02185',phone:'888-344-7233',web:'https://www.digsafe.com',cga:'CGA Rhode Island State Map',cgaWeb:'https://commongroundalliance.com/map/Rhode%20Island',leg:'RIGL §39-18.1',lat:41.82,lon:-71.42},
+  {st:'MA',name:'Dig Safe (Massachusetts)',addr:'PO Box 850005, Braintree, MA 02185',phone:'888-344-7233',web:'https://www.digsafe.com',cga:'CGA Massachusetts State Map',cgaWeb:'https://commongroundalliance.com/map/Massachusetts',leg:'Mass. Gen. Laws ch. 82A',lat:42.36,lon:-71.06},
+  {st:'VT',name:'Dig Safe (Vermont)',addr:'PO Box 850005, Braintree, MA 02185',phone:'888-344-7233',web:'https://www.digsafe.com',cga:'CGA Vermont State Map',cgaWeb:'https://commongroundalliance.com/map/Vermont',leg:'VT Stat. Title 30 §7001',lat:44.26,lon:-72.58},
+  {st:'NH',name:'Dig Safe (New Hampshire)',addr:'PO Box 850005, Braintree, MA 02185',phone:'888-344-7233',web:'https://www.digsafe.com',cga:'CGA New Hampshire State Map',cgaWeb:'https://commongroundalliance.com/map/New%20Hampshire',leg:'NH RSA §374:52',lat:43.21,lon:-71.54},
+  {st:'ME',name:'Dig Safe (Maine)',addr:'PO Box 850005, Braintree, MA 02185',phone:'888-344-7233',web:'https://www.digsafe.com',cga:'CGA Maine State Map',cgaWeb:'https://commongroundalliance.com/map/Maine',leg:'ME Rev. Stat. §1360',lat:44.31,lon:-69.78},
+  // ── NON-CONTIGUOUS ──
+  {st:'AK',name:'Alaska 811 (Alyeska One Call)',addr:'PO Box 200849, Anchorage, AK 99520',phone:'800-478-3121',web:'https://www.akonecall.com',cga:'CGA Alaska State Map',cgaWeb:'https://commongroundalliance.com/map/Alaska',leg:'AS §42.30.030',lat:61.22,lon:-149.90},
+  {st:'HI',name:'Hawaii One Call (Hawaii 811)',addr:'PO Box 2217, Honolulu, HI 96804',phone:'866-423-7287',web:'https://www.hawaii811.com',cga:'CGA Hawaii State Map',cgaWeb:'https://commongroundalliance.com/map/Hawaii',leg:'HRS §269-E',lat:21.31,lon:-157.86}
+];
+
+const tip811El=document.createElement('div');
+tip811El.id='tip-811';
+mapPanel.appendChild(tip811El);
+let _t811=null;
+
+function show811Tip(event,pin){
+  clearTimeout(_t811);
+  const rect=mapPanel.getBoundingClientRect();
+  tip811El.innerHTML=`
+    <div class="t811-hdr">
+      <div class="t811-logo">811</div>
+      <div>
+        <div class="t811-name">${pin.name}</div>
+        <div style="font-size:10px;color:#8899aa;margin-top:1px">${pin.st} One Call Center</div>
+      </div>
+    </div>
+    <div class="t811-section-lbl">ONE CALL CENTER</div>
+    <div class="t811-row"><span>📍</span><span>${pin.addr}</span></div>
+    <div class="t811-row"><span>📞</span><span>${pin.phone}</span></div>
+    <div class="t811-row"><span>🌐</span><a class="t811-link" href="${pin.web}" target="_blank" rel="noopener">${pin.web.replace('https://www.','').replace('https://','')}</a></div>
+    <hr class="t811-divider"/>
+    <div class="t811-section-lbl">LEGISLATION</div>
+    <div class="t811-row"><span>⚖️</span><span>${pin.leg||'See CGA state map'}</span></div>
+    <hr class="t811-divider"/>
+    <div class="t811-section-lbl">CGA REGIONAL PARTNER</div>
+    <div class="t811-row"><span>🤝</span><a class="t811-link" href="${pin.cgaWeb}" target="_blank" rel="noopener">${pin.cga}</a></div>`;
+  let x=event.offsetX+14, y=event.offsetY-20;
+  const tw=300, th=260;
+  if(x+tw>rect.width-10) x=event.offsetX-tw-14;
+  if(y+th>rect.height-10) y=rect.height-th-10;
+  tip811El.style.left=x+'px';
+  tip811El.style.top=y+'px';
+  tip811El.classList.add('show');
+}
+function hide811Tip(delay){
+  _t811=setTimeout(()=>{
+    tip811El.classList.remove('show');
+    setTimeout(()=>{ if(!tip811El.classList.contains('show')) tip811El.style.display='none'; },130);
+  },delay||0);
+}
+tip811El.addEventListener('mouseenter',()=>clearTimeout(_t811));
+tip811El.addEventListener('mouseleave',()=>hide811Tip(0));
+
+function render811Pins(projection){
+  d3.selectAll('.g811').remove();
+  if(currentView!=='state'||!projection) return;
+  const svg=d3.select('#map-svg');
+  PINS_811.forEach(pin=>{
+    const coords=projection([pin.lon,pin.lat]);
+    if(!coords||isNaN(coords[0])||isNaN(coords[1])) return;
+    const [x,y]=coords;
+    const g=svg.append('g').attr('class','g811').attr('transform',`translate(${x},${y})`).style('cursor','pointer');
+    // Orange rounded rect badge
+    const rw=24,rh=16,rx=4;
+    g.append('rect').attr('x',-rw/2).attr('y',-rh/2).attr('width',rw).attr('height',rh).attr('rx',rx).attr('ry',rx)
+      .attr('fill','url(#grad811)')||g.append('rect').attr('x',-rw/2).attr('y',-rh/2).attr('width',rw).attr('height',rh).attr('rx',rx).attr('ry',rx).attr('fill','#FF6000');
+    g.append('rect').attr('x',-rw/2).attr('y',-rh/2).attr('width',rw).attr('height',rh).attr('rx',rx).attr('ry',rx)
+      .attr('fill','#FF6000').attr('opacity',1);
+    g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle').attr('y',0.5)
+      .attr('font-size','8').attr('font-weight','900').attr('fill','white').attr('letter-spacing','.5').attr('pointer-events','none').text('811');
+    g.on('mouseenter',(event)=>{
+      clearTimeout(_t811);
+      show811Tip(event,pin);
+      tip811El.style.display='block';
+    }).on('mouseleave',()=>hide811Tip(500));
+  });
+}
+
     }
 
     g.on('mousemove',(event)=>showPinTip(event,ev))
